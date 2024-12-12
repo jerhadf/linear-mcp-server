@@ -6,6 +6,16 @@ This server provides integration with Linear's issue tracking system through MCP
 
 ## Installation
 
+### Automatic Installation
+
+To install the Linear MCP server for Claude Desktop automatically via [Smithery](https://smithery.ai/protocol/linear-mcp-server):
+
+```bash
+npx @smithery/cli install linear-mcp-server --client claude
+```
+
+### Manual Installation
+
 1. Create or get a Linear API key for your team: [https://linear.app/YOUR-TEAM/settings/api](https://linear.app/YOUR-TEAM/settings/api)
 
 2. Add server config to Claude Desktop:

@@ -89,17 +89,17 @@ class RateLimiter {
     const startTime = Date.now();
     const queuePosition = this.queue.length;
 
-    console.log(`[Linear API] Enqueueing request${operation ? ` for ${operation}` : ''} (Queue position: ${queuePosition})`);
+    console.error(`[Linear API] Enqueueing request${operation ? ` for ${operation}` : ''} (Queue position: ${queuePosition})`);
 
     return new Promise((resolve, reject) => {
       this.queue.push(async () => {
         try {
-          console.log(`[Linear API] Starting request${operation ? ` for ${operation}` : ''}`);
+          console.error(`[Linear API] Starting request${operation ? ` for ${operation}` : ''}`);
           const result = await fn();
           const endTime = Date.now();
           const duration = endTime - startTime;
 
-          console.log(`[Linear API] Completed request${operation ? ` for ${operation}` : ''} (Duration: ${duration}ms)`);
+          console.error(`[Linear API] Completed request${operation ? ` for ${operation}` : ''} (Duration: ${duration}ms)`);
           this.trackRequest(startTime, endTime, operation);
           resolve(result);
         } catch (error) {
