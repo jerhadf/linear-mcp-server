@@ -1,11 +1,22 @@
 # Linear MCP Server
 
+[![smithery badge](https://smithery.ai/badge/linear-mcp-server)](https://smithery.ai/server/linear-mcp-server)
+
 A [Model Context Protocol](https://github.com/modelcontextprotocol) server for the [Linear API](https://developers.linear.app/docs/graphql/working-with-the-graphql-api).
 
 This server provides integration with Linear's issue tracking system through MCP, allowing LLMs to interact with Linear issues.
 
 ## Installation
 
+### Installing via Smithery
+
+To install Linear MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/linear-mcp-server):
+
+```bash
+npx -y @smithery/cli install linear-mcp-server --client claude
+```
+
+### Manual Installation
 1. Create or get a Linear API key for your team: [https://linear.app/YOUR-TEAM/settings/api](https://linear.app/YOUR-TEAM/settings/api)
 
 2. Add server config to Claude Desktop:
