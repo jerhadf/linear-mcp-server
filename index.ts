@@ -24,6 +24,7 @@ interface CreateIssueArgs {
   description?: string;
   priority?: number;
   status?: string;
+  parentId?: string;
 }
 
 interface UpdateIssueArgs {
@@ -282,7 +283,8 @@ class LinearMCPClient {
       teamId: args.teamId,
       description: args.description,
       priority: args.priority,
-      stateId: args.status
+      stateId: args.status,
+      parentId: args.parentId
     });
 
     const issue = await issuePayload.issue;
@@ -522,7 +524,7 @@ class LinearMCPClient {
 
 const createIssueTool: Tool = {
   name: "linear_create_issue",
-  description: "Creates a new Linear issue with specified details. Use this to create tickets for tasks, bugs, or feature requests. Returns the created issue's identifier and URL. Required fields are title and teamId, with optional description, priority (0-4, where 0 is no priority and 1 is urgent), and status.",
+  description: "Creates a new Linear issue with specified details. Use this to create tickets for tasks, bugs, or feature requests. Returns the created issue's identifier and URL. Required fields are title and teamId, with optional description, priority (0-4, where 0 is no priority and 1 is urgent), status, and parentId for creating sub-issues.",
   inputSchema: {
     type: "object",
     properties: {
@@ -530,7 +532,8 @@ const createIssueTool: Tool = {
       teamId: { type: "string", description: "Team ID" },
       description: { type: "string", description: "Issue description" },
       priority: { type: "number", description: "Priority (0-4)" },
-      status: { type: "string", description: "Issue status" }
+      status: { type: "string", description: "Issue status" },
+      parentId: { type: "string", description: "Optional parent issue ID to create this as a sub-issue" }
     },
     required: ["title", "teamId"]
   }
@@ -920,7 +923,8 @@ async function main() {
               teamId: String(args.teamId),
               description: args.description ? String(args.description) : undefined,
               priority: args.priority ? Number(args.priority) : undefined,
-              status: args.status ? String(args.status) : undefined
+              status: args.status ? String(args.status) : undefined,
+              parentId: args.parentId ? String(args.parentId) : undefined
             };
 
             const issue = await linearClient.createIssue(createArgs);
@@ -942,7 +946,7 @@ async function main() {
               id: String(args.id),
               title: args.title ? String(args.title) : undefined,
               description: args.description ? String(args.description) : undefined,
-            priority: args.priority ? Number(args.priority) : undefined,
+              priority: args.priority ? Number(args.priority) : undefined,
               status: args.status ? String(args.status) : undefined
             };
 
@@ -973,11 +977,10 @@ async function main() {
             return {
               content: [{
                 type: "text",
-                text: `Found ${issues.length} issues:\n${
-                  issues.map((issue: LinearIssueResponse) =>
-                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
-                  ).join('\n')
-                }`,
+                text: `Found ${issues.length} issues:\n${issues.map((issue: LinearIssueResponse) =>
+                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
+                ).join('\n')
+                  }`,
                 metadata: baseResponse
               }]
             };
@@ -993,11 +996,10 @@ async function main() {
             return {
               content: [{
                 type: "text",
-                text: `Found ${issues.length} issues:\n${
-                  issues.map((issue: LinearIssueResponse) =>
-                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
-                  ).join('\n')
-                }`,
+                text: `Found ${issues.length} issues:\n${issues.map((issue: LinearIssueResponse) =>
+                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
+                ).join('\n')
+                  }`,
                 metadata: baseResponse
               }]
             };
