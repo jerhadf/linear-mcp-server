@@ -18,7 +18,7 @@ npx @smithery/cli install linear-mcp-server --client claude
 
 ### Manual Installation
 
-1. Create or get a Linear API key for your team: [https://linear.app/YOUR-TEAM/settings/api](https://linear.app/YOUR-TEAM/settings/api)
+1. Create or get a Linear API key for your team: [https://linear.app/YOUR-TEAM/settings/account/security](https://linear.app/YOUR-TEAM/settings/account/security)
 
 2. Add server config to Claude Desktop:
    - MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -28,10 +28,7 @@ npx @smithery/cli install linear-mcp-server --client claude
   "mcpServers": {
     "linear": {
       "command": "npx",
-      "args": [
-        "-y",
-        "linear-mcp-server"
-      ],
+      "args": ["-y", "linear-mcp-server"],
       "env": {
         "LINEAR_API_KEY": "your_linear_api_key_here"
       }
@@ -45,6 +42,7 @@ npx @smithery/cli install linear-mcp-server --client claude
 ### Tools
 
 1. **`linear_create_issue`**: Create a new Linear issues
+
    - Required inputs:
      - `title` (string): Issue title
      - `teamId` (string): Team ID to create issue in
@@ -54,6 +52,7 @@ npx @smithery/cli install linear-mcp-server --client claude
      - `status` (string): Initial status name
 
 2. **`linear_update_issue`**: Update existing issues
+
    - Required inputs:
      - `id` (string): Issue ID to update
    - Optional inputs:
@@ -63,6 +62,7 @@ npx @smithery/cli install linear-mcp-server --client claude
      - `status` (string): New status name
 
 3. **`linear_search_issues`**: Search issues with flexible filtering
+
    - Optional inputs:
      - `query` (string): Text to search in title/description
      - `teamId` (string): Filter by team
@@ -73,6 +73,7 @@ npx @smithery/cli install linear-mcp-server --client claude
      - `limit` (number, default: 10): Max results
 
 4. **`linear_get_user_issues`**: Get issues assigned to a user
+
    - Optional inputs:
      - `userId` (string): User ID (omit for authenticated user)
      - `includeArchived` (boolean): Include archived issues
