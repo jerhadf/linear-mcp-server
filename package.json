@@ -1,41 +1,33 @@
 {
-  "name": "linear-mcp-server",
-  "version": "0.1.0",
-  "description": "A Model Context Protocol server for the Linear API.",
-  "type": "module",
+  "name": "linear-mcp-integration",
+  "version": "1.0.0",
+  "description": "Linear MCP integration for project management",
+  "main": "dist/index.js",
   "bin": {
-    "linear-mcp-server": "build/index.js"
+    "linear-mcp": "./dist/index.js"
   },
-  "files": [
-    "build"
-  ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-    "prepare": "npm run build",
-    "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint . --ext .ts",
+    "test": "jest"
   },
   "dependencies": {
-    "@linear/sdk": "^33.0.0",
-    "@modelcontextprotocol/sdk": "^1.0.3",
-    "dotenv": "^16.4.6",
+    "@linear/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.0.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/node": "^20.17.9",
-    "typescript": "^5.3.3"
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "eslint": "^8.28.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.3"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/modelcontextprotocol/linear-server.git"
-  },
-  "keywords": [
-    "linear",
-    "mcp",
-    "model context protocol",
-    "api",
-    "server"
-  ],
-  "author": "Model Context Protocol",
-  "license": "MIT"
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }
