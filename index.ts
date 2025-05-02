@@ -537,6 +537,18 @@ const createIssueTool: Tool = {
   }
 };
 
+const getIssueTool: Tool = {
+  name: "linear_get_issue",
+  description: "Gets a Linear issue by id. Use this to get details of a specific issue. Required fields are issueId",
+  inputSchema: {
+    type: "object",
+    properties: {
+      issueId: { type: "string", description: "Issue ID" }
+    },
+    required: ["issueId"]
+  }
+};
+
 const updateIssueTool: Tool = {
   name: "linear_update_issue",
   description: "Updates an existing Linear issue's properties. Use this to modify issue details like title, description, priority, or status. Requires the issue ID and accepts any combination of updatable fields. Returns the updated issue's identifier and URL.",
@@ -741,7 +753,7 @@ Best practices:
   - Include markdown formatting in descriptions and comments
 
 Resource patterns:
-- linear-issue:///{issueId} - Single issue details (e.g., linear-issue:///c2b318fb-95d2-4a81-9539-f3268f34af87)
+- linear-issue:///{issueId} - Single issue details (e.g., linear-issue:///c2b318fb-95d2-4a81-9539-f3268f34af87 or linear-issue:///ABC-123)
 - linear-team:///{teamId}/issues - Team's issue list (e.g., linear-team:///OPS/issues)
 - linear-user:///{userId}/assigned - User assignments (e.g., linear-user:///USER-123/assigned)
 - linear-organization: - Organization for the current user
@@ -766,6 +778,11 @@ const CreateIssueArgsSchema = z.object({
   description: z.string().optional().describe("Issue description"),
   priority: z.number().min(0).max(4).optional().describe("Priority (0-4)"),
   status: z.string().optional().describe("Issue status")
+});
+
+// Zod schemas for tool argument validation
+const GetIssueArgsSchema = z.object({
+  issueId: z.string().describe("Issue ID")
 });
 
 const UpdateIssueArgsSchema = z.object({
@@ -821,14 +838,9 @@ async function main() {
       },
       {
         capabilities: {
-          prompts: {
-            default: serverPrompt
-          },
-          resources: {
-            templates: true,
-            read: true
-          },
-          tools: {},
+          prompts: {},
+          resources: {},
+          tools: {}
         },
       }
     );
@@ -904,12 +916,18 @@ async function main() {
     });
 
     server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [createIssueTool, updateIssueTool, searchIssuesTool, getUserIssuesTool, addCommentTool]
+      tools: [createIssueTool, updateIssueTool, searchIssuesTool, getUserIssuesTool, addCommentTool, getIssueTool]
     }));
 
     server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
       return {
         resourceTemplates: resourceTemplates
+      };
+    });
+
+    server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      return {
+        resources: []
       };
     });
 
@@ -922,7 +940,16 @@ async function main() {
     server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       if (request.params.name === serverPrompt.name) {
         return {
-          prompt: serverPrompt
+          description: serverPrompt.description,
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: serverPrompt.instructions
+              }
+            }
+          ]
         };
       }
       throw new Error(`Prompt not found: ${request.params.name}`);
@@ -983,11 +1010,10 @@ async function main() {
             return {
               content: [{
                 type: "text",
-                text: `Found ${issues.length} issues:\n${
-                  issues.map((issue: LinearIssueResponse) =>
-                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
-                  ).join('\n')
-                }`,
+                text: `Found ${issues.length} issues:\n${issues.map((issue: LinearIssueResponse) =>
+                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.status || 'None'}\n  ${issue.url}`
+                ).join('\n')
+                  }`,
                 metadata: baseResponse
               }]
             };
@@ -1000,11 +1026,10 @@ async function main() {
             return {
               content: [{
                 type: "text",
-                text: `Found ${issues.length} issues:\n${
-                  issues.map((issue: LinearIssueResponse) =>
-                    `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
-                  ).join('\n')
-                }`,
+                text: `Found ${issues.length} issues:\n${issues.map((issue: LinearIssueResponse) =>
+                  `- ${issue.identifier}: ${issue.title}\n  Priority: ${issue.priority || 'None'}\n  Status: ${issue.stateName}\n  ${issue.url}`
+                ).join('\n')
+                  }`,
                 metadata: baseResponse
               }]
             };
@@ -1018,6 +1043,26 @@ async function main() {
               content: [{
                 type: "text",
                 text: `Added comment to issue ${issue?.identifier}\nURL: ${comment.url}`,
+                metadata: baseResponse
+              }]
+            };
+          }
+
+          case "linear_get_issue": {
+            const validatedArgs = GetIssueArgsSchema.parse(args);
+            const issue = await linearClient.getIssue(validatedArgs.issueId);
+
+            return {
+              content: [{
+                type: "text",
+                text: `Found issue ${issue.identifier}:
+                # ${issue.title}
+                ${issue.description}
+                
+                Priority: ${issue.priority}
+                Status: ${issue.stateName}
+                URL: ${issue.url}
+                `,
                 metadata: baseResponse
               }]
             };
@@ -1045,7 +1090,7 @@ async function main() {
             message: err.message,
             code: 'VALIDATION_ERROR'
           }));
-          
+
           return {
             content: [{
               type: "text",

@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@linear/sdk": "^33.0.0",
-    "@modelcontextprotocol/sdk": "^1.0.3",
+    "@modelcontextprotocol/sdk": "1.8.0",
     "dotenv": "^16.4.6",
     "zod": "^3.24.2"
   },
