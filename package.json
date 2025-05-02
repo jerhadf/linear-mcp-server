@@ -19,6 +19,7 @@
     "@linear/sdk": "^33.0.0",
     "@modelcontextprotocol/sdk": "^1.0.3",
     "dotenv": "^16.4.6",
+    "mcp-evals": "^1.0.18",
     "zod": "^3.24.2"
   },
   "devDependencies": {
