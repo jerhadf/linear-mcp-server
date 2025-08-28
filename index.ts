@@ -616,6 +616,18 @@ const addCommentTool: Tool = {
   }
 };
 
+const getIssueTool: Tool = {
+  name: "linear_get_issue",
+  description: "Retrieves a specific Linear issue by its ID. Returns detailed information about the issue including title, description, priority, status, assignee, team, and URL. Use this to get full details about a specific issue when you have its ID.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      id: { type: "string", description: "Issue ID" }
+    },
+    required: ["id"]
+  }
+};
+
 const resourceTemplates: ResourceTemplate[] = [
   {
     uriTemplate: "linear-issue:///{issueId}",
@@ -801,6 +813,10 @@ const AddCommentArgsSchema = z.object({
   displayIconUrl: z.string().optional().describe("Optional avatar URL for the comment")
 });
 
+const GetIssueArgsSchema = z.object({
+  id: z.string().describe("Issue ID")
+});
+
 async function main() {
   try {
     dotenv.config();
@@ -904,7 +920,7 @@ async function main() {
     });
 
     server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [createIssueTool, updateIssueTool, searchIssuesTool, getUserIssuesTool, addCommentTool]
+      tools: [createIssueTool, updateIssueTool, searchIssuesTool, getUserIssuesTool, addCommentTool, getIssueTool]
     }));
 
     server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
@@ -1018,6 +1034,19 @@ async function main() {
               content: [{
                 type: "text",
                 text: `Added comment to issue ${issue?.identifier}\nURL: ${comment.url}`,
+                metadata: baseResponse
+              }]
+            };
+          }
+
+          case "linear_get_issue": {
+            const validatedArgs = GetIssueArgsSchema.parse(args);
+            const issue = await linearClient.getIssue(validatedArgs.id);
+
+            return {
+              content: [{
+                type: "text",
+                text: `Issue Details:\nID: ${issue.identifier}\nTitle: ${issue.title}\nDescription: ${issue.description || 'No description'}\nPriority: ${issue.priority || 'None'}\nStatus: ${issue.status || 'None'}\nAssignee: ${issue.assignee || 'Unassigned'}\nTeam: ${issue.team || 'No team'}\nURL: ${issue.url}`,
                 metadata: baseResponse
               }]
             };

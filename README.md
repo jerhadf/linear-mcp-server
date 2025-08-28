@@ -88,6 +88,11 @@ npx @smithery/cli install linear-mcp-server --client claude
      - `createAsUser` (string): Custom username
      - `displayIconUrl` (string): Custom avatar URL
 
+6. **`linear_get_issue`**: Get detailed information about a specific issue
+   - Required inputs:
+     - `id` (string): Issue ID to retrieve
+   - Returns detailed issue information including title, description, priority, status, assignee, team, and URL
+
 ### Resources
 
 - `linear-issue:///{issueId}` - View individual issue details
@@ -109,6 +114,8 @@ Some example prompts you can use with Claude Desktop to interact with Linear:
 4. "Give me a summary of recent updates on the issues for mobile app development" → use `search_issues` to identify the relevant issue(s), then `linear-issue:///{issueId}` fetch the issue details and show recent activity and comments
 
 5. "What's the current workload for the mobile team?" → combine `linear-team:///{teamId}/issues` and `search_issues` to analyze issue distribution and priorities across the mobile team
+
+6. "Get me the full details of issue FOX-1701" → use `linear_get_issue` with the issue ID to retrieve complete information about a specific issue including its current status, assignee, and description
 
 ## Development
 
