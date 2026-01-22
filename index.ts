@@ -180,11 +180,49 @@ class RateLimiter {
 class LinearMCPClient {
   private client: LinearClient;
   public readonly rateLimiter: RateLimiter;
+  private stateCache: Map<string, Map<string, string>> = new Map(); // teamId -> (stateName -> stateId)
 
   constructor(apiKey: string) {
     if (!apiKey) throw new Error("LINEAR_API_KEY environment variable is required");
     this.client = new LinearClient({ apiKey });
     this.rateLimiter = new RateLimiter();
+  }
+
+  /**
+   * Resolves a status name (e.g., "Done", "In Progress") to a workflow state UUID.
+   * Caches results per team to avoid repeated API calls.
+   */
+  private async resolveStateId(teamId: string, statusName: string): Promise<string> {
+    // Check cache first
+    const teamCache = this.stateCache.get(teamId);
+    if (teamCache) {
+      const cachedId = teamCache.get(statusName.toLowerCase());
+      if (cachedId) return cachedId;
+    }
+
+    // Fetch workflow states for this team
+    const states = await this.rateLimiter.enqueue(
+      () => this.client.workflowStates({
+        filter: { team: { id: { eq: teamId } } }
+      }),
+      'resolveStateId'
+    );
+
+    // Build cache for this team
+    const newCache = new Map<string, string>();
+    for (const state of states.nodes) {
+      newCache.set(state.name.toLowerCase(), state.id);
+    }
+    this.stateCache.set(teamId, newCache);
+
+    // Look up the requested state
+    const stateId = newCache.get(statusName.toLowerCase());
+    if (!stateId) {
+      const validStates = Array.from(newCache.keys()).join(', ');
+      throw new Error(`Unknown status "${statusName}". Valid statuses for this team: ${validStates}`);
+    }
+
+    return stateId;
   }
 
   private async getIssueDetails(issue: Issue) {
@@ -278,12 +316,18 @@ class LinearMCPClient {
   }
 
   async createIssue(args: CreateIssueArgs) {
+    // Resolve status name to state UUID if provided
+    let stateId: string | undefined;
+    if (args.status) {
+      stateId = await this.resolveStateId(args.teamId, args.status);
+    }
+
     const issuePayload = await this.client.createIssue({
       title: args.title,
       teamId: args.teamId,
       description: args.description,
       priority: args.priority,
-      stateId: args.status
+      stateId
     });
 
     const issue = await issuePayload.issue;
@@ -295,11 +339,19 @@ class LinearMCPClient {
     const issue = await this.client.issue(args.id);
     if (!issue) throw new Error(`Issue ${args.id} not found`);
 
+    // Resolve status name to state UUID if provided
+    let stateId: string | undefined;
+    if (args.status) {
+      const team = await issue.team;
+      if (!team) throw new Error(`Could not get team for issue ${args.id}`);
+      stateId = await this.resolveStateId(team.id, args.status);
+    }
+
     const updatePayload = await issue.update({
       title: args.title,
       description: args.description,
       priority: args.priority,
-      stateId: args.status
+      stateId
     });
 
     const updatedIssue = await updatePayload.issue;
