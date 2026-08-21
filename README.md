@@ -1,6 +1,6 @@
 # Linear MCP Server
 
-[![npm version](https://img.shields.io/npm/v/linear-mcp-server.svg)](https://www.npmjs.com/package/linear-mcp-server) [![smithery badge](https://smithery.ai/badge/linear-mcp-server)](https://smithery.ai/server/linear-mcp-server)
+[![npm version](https://img.shields.io/npm/v/linear-mcp-server.svg)](https://www.npmjs.com/package/linear-mcp-server) [![Listed on Skillselion](https://skillselion.com/badge/mcp/tool/io.github.jerhadf/linear-mcp-server.svg)](https://skillselion.com/mcp/tool/io.github.jerhadf/linear-mcp-server)
 
 **IMPORTANT NOTE:** This MCP Server is now deprecated and is no longer being maintained. I recommend you use the official Linear remote MCP server here: https://linear.app/changelog/2025-05-01-mcp (https://mcp.linear.app/sse)
 
